@@ -1,0 +1,6 @@
+# qr-gen-bd — static site, no build artifacts
+*.log
+.DS_Store
+Thumbs.db
+*.tmp
+node_modules/

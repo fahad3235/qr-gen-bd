@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR Gen BD — Offline QR Code Generator</title>
+<meta name="description" content="Free offline bilingual (EN/বাংলা) QR code generator: text, URL, WiFi, vCard. No internet needed, nothing uploaded.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='%68%74%74%70%3A%2F%2F%77%77%77%2E%77%33%2E%6F%72%67%2F%32%30%30%30%2F%73%76%67' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%231a237e'/%3E%3Crect x='12' y='12' width='16' height='16' fill='white'/%3E%3Crect x='36' y='12' width='16' height='16' fill='white'/%3E%3Crect x='12' y='36' width='16' height='16' fill='white'/%3E%3Crect x='16' y='16' width='8' height='8' fill='%231a237e'/%3E%3Crect x='40' y='16' width='8' height='8' fill='%231a237e'/%3E%3Crect x='16' y='40' width='8' height='8' fill='%231a237e'/%3E%3Crect x='36' y='36' width='8' height='8' fill='white'/%3E%3Crect x='48' y='36' width='4' height='4' fill='white'/%3E%3Crect x='36' y='48' width='4' height='4' fill='white'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true">◧</span>
+    <div>
+      <h1 data-i18n="appTitle">QR Gen BD</h1>
+      <p class="tagline" data-i18n="tagline">Offline QR code generator — works with no internet</p>
+    </div>
+  </div>
+  <button id="langToggle" class="lang-toggle" type="button" aria-label="Switch language / ভাষা বদলান">
+    <span data-i18n="langToggle">বাংলা</span>
+  </button>
+</header>
+
+<main class="layout">
+  <section class="panel generator" aria-labelledby="genHeading">
+    <h2 id="genHeading" class="visually-hidden" data-i18n="genHeading">Generate a QR code</h2>
+
+    <div class="tabs" role="tablist" aria-label="QR content type">
+      <button class="tab active" role="tab" aria-selected="true" data-mode="text" type="button" data-i18n="tabText">Text</button>
+      <button class="tab" role="tab" aria-selected="false" data-mode="url" type="button" data-i18n="tabUrl">URL</button>
+      <button class="tab" role="tab" aria-selected="false" data-mode="wifi" type="button" data-i18n="tabWifi">WiFi</button>
+      <button class="tab" role="tab" aria-selected="false" data-mode="vcard" type="button" data-i18n="tabVcard">vCard</button>
+    </div>
+
+    <form id="qrForm" novalidate>
+      <!-- TEXT -->
+      <div class="mode-fields" data-fields="text">
+        <label class="field">
+          <span data-i18n="labelText">Text to encode</span>
+          <textarea id="inText" rows="3" maxlength="2000" data-i18n-ph="phText" placeholder="Type anything…"></textarea>
+        </label>
+      </div>
+
+      <!-- URL -->
+      <div class="mode-fields hidden" data-fields="url">
+        <label class="field">
+          <span data-i18n="labelUrl">Website URL</span>
+          <input id="inUrl" type="text" inputmode="url" maxlength="2000" data-i18n-ph="phUrl" placeholder="example.com or https://example.com">
+        </label>
+        <p class="hint" data-i18n="hintUrl">Scheme is optional — https:// is added automatically.</p>
+      </div>
+
+      <!-- WIFI -->
+      <div class="mode-fields hidden" data-fields="wifi">
+        <label class="field">
+          <span data-i18n="labelSsid">WiFi network name (SSID)</span>
+          <input id="inSsid" type="text" maxlength="32" data-i18n-ph="phSsid" placeholder="MyHomeWiFi">
+        </label>
+        <label class="field">
+          <span data-i18n="labelWifiSec">Security type</span>
+          <select id="inWifiSec">
+            <option value="WPA" data-i18n="secWpa">WPA / WPA2</option>
+            <option value="WEP" data-i18n="secWep">WEP</option>
+            <option value="nopass" data-i18n="secNone">None (open network)</option>
+          </select>
+        </label>
+        <label class="field" id="wifiPassWrap">
+          <span data-i18n="labelWifiPass">Password</span>
+          <input id="inWifiPass" type="password" maxlength="63" autocomplete="off" data-i18n-ph="phWifiPass" placeholder="WiFi password">
+        </label>
+      </div>
+
+      <!-- VCARD -->
+      <div class="mode-fields hidden" data-fields="vcard">
+        <label class="field">
+          <span data-i18n="labelName">Full name</span>
+          <input id="inName" type="text" maxlength="100" data-i18n-ph="phName" placeholder="e.g. Rahim Uddin">
+        </label>
+        <label class="field">
+          <span data-i18n="labelPhone">Phone number</span>
+          <input id="inPhone" type="tel" maxlength="20" data-i18n-ph="phPhone" placeholder="+8801XXXXXXXXX">
+        </label>
+      </div>
+
+      <div class="options-row">
+        <label class="field inline">
+          <span data-i18n="labelSize">QR size</span>
+          <select id="inSize">
+            <option value="256">256 px</option>
+            <option value="512" selected>512 px</option>
+            <option value="1024">1024 px</option>
+          </select>
+        </label>
+        <label class="field inline">
+          <span data-i18n="labelEc">Error correction</span>
+          <select id="inEc">
+            <option value="L" data-i18n="ecL">L — Low (~7%)</option>
+            <option value="M" selected data-i18n="ecM">M — Medium (~15%)</option>
+            <option value="Q" data-i18n="ecQ">Q — Quartile (~25%)</option>
+            <option value="H" data-i18n="ecH">H — High (~30%)</option>
+          </select>
+        </label>
+      </div>
+
+      <p id="formError" class="error" role="alert" hidden></p>
+      <button id="genBtn" class="btn primary" type="submit" data-i18n="btnGenerate">Generate QR</button>
+    </form>
+  </section>
+
+  <section class="panel preview" aria-labelledby="prevHeading">
+    <h2 id="prevHeading" data-i18n="prevHeading">Preview</h2>
+    <div id="previewEmpty" class="preview-empty">
+      <div class="preview-empty-qr" aria-hidden="true">▦</div>
+      <p data-i18n="previewEmpty">Your QR code will appear here.</p>
+    </div>
+    <div id="previewResult" class="preview-result" hidden>
+      <canvas id="qrCanvas" aria-label="Generated QR code"></canvas>
+      <p id="payloadLine" class="payload-line"></p>
+      <div class="preview-actions">
+        <button id="dlBtn" class="btn primary" type="button" data-i18n="btnDownload">Download PNG</button>
+        <button id="copyBtn" class="btn ghost" type="button" data-i18n="btnCopy">Copy text</button>
+      </div>
+      <p id="dlStatus" class="status" role="status" hidden></p>
+    </div>
+  </section>
+
+  <section class="panel history" aria-labelledby="histHeading">
+    <div class="history-head">
+      <h2 id="histHeading" data-i18n="histHeading">History</h2>
+      <div class="history-tools">
+        <button id="exportBtn" class="btn small ghost" type="button" data-i18n="btnExport">Export</button>
+        <button id="importBtn" class="btn small ghost" type="button" data-i18n="btnImport">Import</button>
+        <button id="clearBtn" class="btn small danger" type="button" data-i18n="btnClear">Clear</button>
+        <input id="importFile" type="file" accept="application/json,.json" class="visually-hidden" aria-hidden="true" tabindex="-1">
+      </div>
+    </div>
+    <p id="historyEmpty" class="history-empty" data-i18n="historyEmpty">No QR codes yet — generate one above.</p>
+    <ul id="historyList" class="history-list"></ul>
+  </section>
+</main>
+
+<footer class="footer">
+  <p data-i18n="footerNote">100% offline — your data never leaves this device.</p>
+</footer>
+
+<script src="js/qrcode.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
